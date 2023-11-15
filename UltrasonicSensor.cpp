@@ -12,7 +12,9 @@ UltrasonicSensor::UltrasonicSensor() {
 }
 
 float UltrasonicSensor::compute_distance(float time, float speed){
+	float distance = (speed * time / 2);
 
+	return distance;
 }
 
 
