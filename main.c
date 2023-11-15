@@ -21,6 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "EventLoop.hpp"
 
 /* USER CODE END Includes */
 
@@ -93,10 +94,10 @@ int main(void){
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  EventLoopC();
+
   while (1) {
 
-	HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
-	HAL_Delay(500);
     /* USER CODE END WHILE */
   }
 
