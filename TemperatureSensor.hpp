@@ -10,14 +10,14 @@
 
 class TemperatureSensor() {
 	private:
-		double temperature{0};
-		const double heat_capacity_ratio{1.4};
-		const double molar_gas_constant{8.3145};
-		const double molecular_mass{28.96};
+		float temperature;
+		const float;
+		const float;
+		const float;
 
 	public:
 		void sense_temperature();
-		double get_temperature();
+		float get_speed_of_sound();
 }
 
 
