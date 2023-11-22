@@ -23,6 +23,7 @@
 /* USER CODE BEGIN Includes */
 #include <string.h>
 #include <stdio.h>
+#include <math.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -60,8 +61,12 @@ static void MX_TIM3_Init(void);
 /* USER CODE BEGIN PFP */
 
 void usDelay(uint32_t uSec);
-void DHT22_start();
-float calculate_speed();
+void DHT22_Start();
+float calculate_speed(float t);
+
+void Set_Pin_Input(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin);
+void Set_Pin_Output(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin);
+
 uint8_t DHT22_Check_Response();
 uint8_t DHT22_Read();
 
@@ -124,11 +129,11 @@ int main(void)
 
 	  // Measure speed of sound
 	  DHT22_Start();
-	  DHT22_CheckResponse();
+	  DHT22_Check_Response();
 	  temperature = DHT22_Read();
-
 	  speedOfSound = calculate_speed(temperature);
-	  // Measure
+
+	  // Ultrasonic
 	  // Set TRIG to LOW for few uSec
 	  HAL_GPIO_WritePin(TRIG_GPIO_Port, TRIG_Pin, GPIO_PIN_RESET);
 	  usDelay(3);
@@ -155,6 +160,8 @@ int main(void)
 	  sprintf(uartBuf, "Distance = %.1f\r\n", distance);
 	  		  HAL_UART_Transmit(&huart2, (uint8_t *)uartBuf, strlen(uartBuf), 100);
 
+	  sprintf(uartBuf, "Distance = %.1f\r\n", temperature);
+	  			  		  HAL_UART_Transmit(&huart2, (uint8_t *)uartBuf, strlen(uartBuf), 100);
 	  /*
 	  // Notifies while loop has finished an iteration
 	  strcpy((char*)runBuf, "Iter...\r\n");
@@ -164,8 +171,7 @@ int main(void)
 
     /* USER CODE END WHILE */
   }
-
-  /* USER CODE BEGIN 3 */
+    /* USER CODE BEGIN 3 */
   /* USER CODE END 3 */
 }
 
@@ -345,7 +351,7 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, LD2_Pin|TRIG_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, LD2_Pin|TRIG_Pin|DHT22_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : B1_Pin */
   GPIO_InitStruct.Pin = B1_Pin;
@@ -353,8 +359,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : LD2_Pin TRIG_Pin */
-  GPIO_InitStruct.Pin = LD2_Pin|TRIG_Pin;
+  /*Configure GPIO pins : LD2_Pin TRIG_Pin DHT22_Pin */
+  GPIO_InitStruct.Pin = LD2_Pin|TRIG_Pin|DHT22_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -381,30 +387,47 @@ void usDelay(uint32_t uSec) {
 	usTIM->SR &= ~(0x0001);
 }
 
+void Set_Pin_Input(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin) {
+	GPIO_InitTypeDef GPIO_InitStruct = {0};
+	GPIO_InitStruct.Pin = GPIO_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+	GPIO_InitStruct.Pull = GPIO_PULLUP;
+	HAL_GPIO_Init(GPIOx, &GPIO_InitStruct);
+}
+
+void Set_Pin_Output(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin) {
+	GPIO_InitTypeDef GPIO_InitStruct = {0};
+	GPIO_InitStruct.Pin = GPIO_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+	HAL_GPIO_Init(GPIOx, &GPIO_InitStruct);
+}
+
+
 void DHT22_Start() {
-	Set_Pin_Output(DHT22_PORT, DHT22_PIN); // set the pin as output
-	HAL_GPIO_WritePin (DHT22_PORT, DHT22_PIN, 0);   // pull the pin low
+	Set_Pin_Output(DHT22_GPIO_Port, DHT22_Pin); // set the pin as output
+	HAL_GPIO_WritePin (DHT22_GPIO_Port, DHT22_Pin, 0);   // pull the pin low
 	HAL_Delay(1200);   // wait for > 1ms
 
-	HAL_GPIO_WritePin (DHT22_PORT, DHT22_PIN, 1);   // pull the pin high
-	delay (20);   // wait for 30us
+	HAL_GPIO_WritePin (DHT22_GPIO_Port, DHT22_Pin, 1);   // pull the pin high
+	usDelay (20);   // wait for 30us
 
-	Set_Pin_Input(DHT22_PORT, DHT22_PIN);   // set as input
+	Set_Pin_Input(DHT22_GPIO_Port, DHT22_Pin);   // set as input
 }
 
 uint8_t DHT22_Check_Response() {
-	Set_Pin_Input(DHT22_PORT, DHT22_PIN);   // set as input
+	Set_Pin_Input(DHT22_GPIO_Port, DHT22_Pin);   // set as input
 	uint8_t Response = 0;
-	delay (40);  // wait for 40us
-	if (!(HAL_GPIO_ReadPin (DHT22_PORT, DHT22_PIN))) // if the pin is low
+	usDelay (40);  // wait for 40us
+	if (!(HAL_GPIO_ReadPin (DHT22_GPIO_Port, DHT22_Pin))) // if the pin is low
 	{
-		delay (80);   // wait for 80us
+		usDelay (80);   // wait for 80us
 
-		if ((HAL_GPIO_ReadPin (DHT22_PORT, DHT22_PIN))) Response = 1;  // if the pin is high, response is ok
+		if ((HAL_GPIO_ReadPin (DHT22_GPIO_Port, DHT22_Pin))) Response = 1;  // if the pin is high, response is ok
 		else Response = -1;
 	}
 
-	while ((HAL_GPIO_ReadPin (DHT22_PORT, DHT22_PIN)));   // wait for the pin to go low
+	while ((HAL_GPIO_ReadPin (DHT22_GPIO_Port, DHT22_Pin)));   // wait for the pin to go low
 	return Response;
 }
 
@@ -412,15 +435,15 @@ uint8_t DHT22_Read (void) {
 	uint8_t i,j;
 	for (j=0;j<8;j++)
 	{
-		while (!(HAL_GPIO_ReadPin (DHT22_PORT, DHT22_PIN)));   // wait for the pin to go high
-		delay (40);   // wait for 40 us
+		while (!(HAL_GPIO_ReadPin (DHT22_GPIO_Port, DHT22_Pin)));   // wait for the pin to go high
+		usDelay (40);   // wait for 40 us
 
-		if (!(HAL_GPIO_ReadPin (DHT22_PORT, DHT22_PIN)))   // if the pin is low
+		if (!(HAL_GPIO_ReadPin (DHT22_GPIO_Port, DHT22_Pin)))   // if the pin is low
 		{
 			i&= ~(1<<(7-j));   // write 0
 		}
 		else i|= (1<<(7-j));  // if the pin is high, write 1
-		while ((HAL_GPIO_ReadPin (DHT22_PORT, DHT22_PIN)));  // wait for the pin to go low
+		while ((HAL_GPIO_ReadPin (DHT22_GPIO_Port, DHT22_Pin)));  // wait for the pin to go low
 	}
 
 	return i;
