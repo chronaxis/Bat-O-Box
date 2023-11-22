@@ -7,9 +7,8 @@
 
 #include "LEDDisplay.hpp"
 
-LEDDisplay::LEDDisplay() {
-
-}
+LEDDisplay::LEDDisplay() {}
+LEDDisplay::~LEDDisplay() {}
 
 void LEDDisplay::print() {
 

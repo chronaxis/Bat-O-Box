@@ -10,8 +10,9 @@
 
 class LEDDisplay {
 	private:
-		LEDDisplay();
 	public:
+		LEDDisplay();
+		~LEDDisplay();
 		void print();
 };
 
