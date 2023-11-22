@@ -8,9 +8,8 @@
 #include "TemperatureSensor.hpp"
 #include <cmath>
 
-TemperatureSensor::TemperatureSensor() {
-	float temperature{0};
-}
+TemperatureSensor::TemperatureSensor() {}
+TemperatureSensor::~TemperatureSensor() {}
 
 void TemperatureSensor::sense_temperature() {
 

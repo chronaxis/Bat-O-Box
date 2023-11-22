@@ -10,18 +10,16 @@
 
 class TemperatureSensor {
 	private:
-		float temperature;
+		float temperature{0};
 		const float heat_capacity_ratio{1.4};
 		const float molar_gas_constant{8.3145};
 		const float molecular_mass{28.96};
-
-		TemperatureSensor();
-
 	public:
+		TemperatureSensor();
+		~TemperatureSensor();
+
 		void sense_temperature();
 		float get_speed_of_sound();
 };
-
-
 
 #endif /* INC_TEMPERATURESENSOR_HPP_ */
