@@ -21,8 +21,11 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "EventLoop.hpp"
-
+#include <stdio.h>
+//Delay library
+#include "DWT_Delay.h"
+//Include header file
+#include "LCD_i2c.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -42,10 +45,11 @@
 
 /* Private variables ---------------------------------------------------------*/
 I2C_HandleTypeDef hi2c1;
+
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-
+LCD_I2C_t lcd;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -93,18 +97,39 @@ int main(void)
   MX_USART2_UART_Init();
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
+  DWT_Delay_Init(); //Init the delay library
 
-  /* USER CODE END 2 */
+    LCD_Init(&lcd, &hi2c1, 0x27, 16, 2);
+
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+    LCD_Backlight(&lcd, 1); //Backlight on
 
-  while (1) {
+    LCD_SendString(&lcd, "Distance:");
+
+    char msg[10] = {0}; //buffer
+    uint8_t distance = 0;
+
+
 
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
   }
+
+    while (1) {
+
+    	// code to get distance
+
+    	// display using distance variable
+      LCD_SetCursor(&lcd, 1, 1);
+      sprintf(msg, "%d  ", distance);
+      LCD_SendString(&lcd, msg);
+      DWT_Delay_ms(250);
+
+    }
+
   /* USER CODE END 3 */
 
 }
