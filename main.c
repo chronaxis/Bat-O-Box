@@ -101,6 +101,9 @@ int main(void)
 
     LCD_Init(&lcd, &hi2c1, 0x27, 16, 2);
 
+
+  /* Infinite loop */
+  /* USER CODE BEGIN WHILE */
     LCD_Backlight(&lcd, 1); //Backlight on
 
     LCD_SendString(&lcd, "Distance:");
@@ -109,6 +112,11 @@ int main(void)
     uint8_t distance = 0;
 
 
+
+    /* USER CODE END WHILE */
+
+    /* USER CODE BEGIN 3 */
+  }
 
     while (1) {
 
@@ -121,7 +129,9 @@ int main(void)
       DWT_Delay_ms(250);
 
     }
+
   /* USER CODE END 3 */
+
 }
 
 /**
